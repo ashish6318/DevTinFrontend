@@ -12,14 +12,30 @@ const EditProfile = ({ user }) => {
   const [age, setAge] = useState(user.age || "");
   const [gender, setGender] = useState(user.gender || "");
   const [about, setAbout] = useState(user.about || "");
-  const [skills, setSkills] = useState(user.skills || []);
+  const [skills, setSkills] = useState(Array.isArray(user.skills) ? user.skills : []);
   const [skillInput, setSkillInput] = useState("");
   const [error, setError] = useState("");
   const [showToast, setShowToast] = useState(false);
   const dispatch = useDispatch();
 
+  // ✅ Add Skill to the List
+  const handleSkillAdd = () => {
+    if (skillInput.trim() && !skills.includes(skillInput.trim())) {
+      setSkills([...skills, skillInput.trim()]);
+    }
+    setSkillInput(""); // Clear input field after adding
+  };
+
+  // ✅ Remove Skill from the List
+  const handleSkillRemove = (index) => {
+    setSkills(skills.filter((_, i) => i !== index));
+  };
+
+  // ✅ Save Profile Function (with Debugging)
   const saveProfile = async () => {
     setError("");
+    console.log("Saving profile with skills:", skills); // Debugging skills before API call
+
     try {
       const res = await axios.patch(
         `${BASE_URL}/profile/edit`,
@@ -32,19 +48,6 @@ const EditProfile = ({ user }) => {
     } catch (err) {
       setError(err.response?.data || "An error occurred.");
     }
-  };
-
-  const handleSkillAdd = () => {
-    if (skillInput.trim() && !skills.includes(skillInput)) {
-      setSkills([...skills, skillInput.trim()]);
-    }
-    setSkillInput("");
-  };
-
-  const handleSkillRemove = (index) => {
-    setSkills(skills.filter((_, i) => i !== index));
-   
-
   };
 
   return (
@@ -114,28 +117,15 @@ const EditProfile = ({ user }) => {
               />
             </label>
 
-            {/* Skills Input */}
+            {/* Skills Input Field */}
             <label className="form-control w-full">
               <span className="label-text">Skills:</span>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={skillInput}
-                  className="input input-bordered flex-1"
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSkillAdd()}
-                />
-                <button className="btn btn-primary" onClick={handleSkillAdd}>
-                  Add
-                </button>
-              </div>
-            </label>
-
-            {/* Display Skills */}
-            {skills.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {skills.map((skill, index) => (
-                  <span key={index} className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full flex items-center">
+                  <span
+                    key={index}
+                    className="bg-blue-200 text-blue-800 px-3 py-1 rounded-full flex items-center"
+                  >
                     {skill}
                     <button
                       className="ml-2 text-red-500 hover:text-red-700"
@@ -146,7 +136,19 @@ const EditProfile = ({ user }) => {
                   </span>
                 ))}
               </div>
-            )}
+
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="text"
+                  value={skillInput}
+                  className="input input-bordered flex-1"
+                  placeholder="Enter a skill"
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSkillAdd()}
+                />
+                <button className="btn btn-primary" onClick={handleSkillAdd}>Add</button>
+              </div>
+            </label>
 
             {/* Error Message */}
             {error && <p className="text-red-500">{error}</p>}

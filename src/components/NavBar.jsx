@@ -3,11 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import { removeUser } from "../utils/userSlice";
+import { toggleTheme } from "../utils/themeSlice";
+import { themeSelect } from "../utils/themeSelectors";
 
 const NavBar = () => {
-  const user = useSelector((store) => store.user);
+  const user = useSelector((store) => store.user); // Get user state
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const theme = useSelector(themeSelect); // Get theme state
 
   const handleLogout = async () => {
     try {
@@ -15,17 +18,26 @@ const NavBar = () => {
       dispatch(removeUser());
       return navigate("/login");
     } catch (err) {
-      // Error logic maybe redirect to error page
+      console.error("Logout error:", err);
     }
   };
 
   return (
-    <div className="navbar bg-base-300">
+    <div className={`navbar ${theme === "dark" ? "bg-gray-900 text-white" : "bg-base-300"}`}>
       <div className="flex-1">
         <Link to="/" className="btn btn-ghost text-xl">
           👩‍💻 DevTinder
         </Link>
       </div>
+
+      {/* Theme Toggle Button */}
+      <button
+        onClick={() => dispatch(toggleTheme())}
+        className="btn btn-sm btn-outline mx-4"
+      >
+        {theme === "dark" ? "🌞" : "🌙"}
+      </button>
+
       {user && (
         <div className="flex-none gap-2">
           <div className="form-control">Welcome, {user.firstName}</div>
@@ -52,7 +64,6 @@ const NavBar = () => {
               <li>
                 <Link to="/connections">Connections</Link>
               </li>
-
               <li>
                 <Link to="/requests">Requests</Link>
               </li>
@@ -66,4 +77,6 @@ const NavBar = () => {
     </div>
   );
 };
+
 export default NavBar;
+
